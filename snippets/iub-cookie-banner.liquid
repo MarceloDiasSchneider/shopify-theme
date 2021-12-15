@@ -1,0 +1,24 @@
+<script type="text/javascript">
+var _iub = _iub || [];
+_iub.csConfiguration = {"consentOnContinuedBrowsing":false,"whitelabel":false,"lang":"it","floatingPreferencesButtonDisplay":"bottom-right","siteId":2402423,"cookiePolicyId":18451456, "banner":{ "acceptButtonDisplay":true,"customizeButtonDisplay":true,"position":"float-bottom-center" }};
+ _iub.csConfiguration.perPurposeConsent = false;
+    _iub.csConfiguration.callback = {
+        onPreferenceFirstExpressed: function(consent) {
+            window.Shopify.customerPrivacy.setTrackingConsent(consent.consent, function() {});
+        }
+    };
+</script>
+<script type="text/javascript" src="//cdn.iubenda.com/cs/iubenda_cs.js" charset="UTF-8" async></script>
+
+<!-- Tracking API -->
+<script type="text/javascript">
+    window.Shopify.loadFeatures([{
+            name: 'consent-tracking-api',
+            version: '0.1',
+        }, ],
+        function(error) {
+            if (error) {
+                throw error;
+            }
+        });
+</script>

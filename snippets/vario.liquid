@@ -1,0 +1,118 @@
+    {% if request.page_type == 'product' %}
+        <script id="vario-product-json" type="application/json">
+            {{ product | json }}
+        </script>
+        <script>
+            var vario_options_with_values = {{ product.options_with_values | json }}
+        </script>
+        
+    {% endif %}
+    {% if request.page_type == 'product' or request.page_type == 'collection' %}
+        <script id="vario-product-variant-template" type="text/html">
+        <div class="vario-all-variant-wrapper" data-product-id="{{ product.id }}"
+          style="--swatch-size:var(--swatch-size-large);
+          --swatch-style:var(--swatch-style-circle);
+          --swatch-img-pos:var(--swatch-img-pos-fit);
+          --swatch-border:#e4e4e4;
+          --swatch-border-active:#4f5354;
+          --swatch-button: #fff;
+          --swatch-button-active: #4f5354;
+          --swatch-button-border: #babfc3;
+          --swatch-button-border-active: #4f5354;
+          --swatch-button-color: #202223;
+          --swatch-button-color-active: #ffffff;
+          --swatch-button-padding: var(--swatch-button-small);
+          margin: 20px 0">
+        {% raw %}
+            {% assign parentIndex = 0 %}
+            {% for option in options_with_values %}
+                {% assign swatch_settings = varioSettings | where: "name", option.name %}
+                {% assign swatch_values = swatch_settings[0].values.product.values %}
+                {% assign display_option = swatch_settings[0].values.product.display_option %}
+                {% assign image_size = swatch_settings[0].values.product.image_size %}
+                {% assign display_on_collection = swatch_settings[0].display_on_collection %}
+                {% assign isDisplay = true %}
+
+                {% if option.name == "Title" and option.values.size == 1 and option.values[0] == 'Default Title' %}
+                	{% assign isDisplay = false %}
+                {% endif %}
+                
+                {% if isDisplay == true and page_type_collection == true and display_on_collection == false %}
+                    {% assign isDisplay = false %}
+                {% endif %}
+
+                <div class="vario-variant-wrapper{% if isDisplay != true %} vario-hidden{% endif %}">
+                    {% if display_option == "color-custom-image-swatch" %}
+                        <label class="vario-variant-name">{{ option.name }}
+                            <span class="vario-variant-selected"></span>
+                        </label>
+                        <ul class="vario-variants" data-variant-name="{{ option.name | escape }}">
+                        {% for swatch in option.values %}
+                            {% assign current_setting = swatch_values | where: "name", swatch %}
+                            {%- assign swatch_color = current_setting[0].swatch_color  -%}
+                            {%- assign swatch_image = current_setting[0].swatch_image -%}
+                            <li class="vario-variant " data-v-tooltip="{{ swatch | escape }}" data-value="{{ swatch | escape }}" data-position="{{ parentIndex }}" data-product-id="{{product.id}}">
+                                {% if swatch_image != ''%}
+                                    <div class="sv-swatch swatch-image sv-single-border" style="background-image: url({{ swatch_image }})"></div>
+                                {% else %}
+                                    <div class="sv-swatch swatch-color sv-single-border" style="background-color: {{swatch_color}}"></div>
+                                {% endif %}
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% elsif display_option == "button"%}
+                        <label class="vario-variant-name">
+                        {{ option.name }}<span class="vario-variant-selected"></span>
+                        </label>
+                        <ul class="vario-variants" data-variant-name="{{ option.name | escape }}">
+                            {% for swatch in option.values %}
+                                <li class="vario-variant " data-value="{{ swatch | escape }}" data-position="{{ parentIndex }}" data-product-id="{{product.id}}">
+                                    <span class="sv-swatch-button">{{ swatch }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% elsif display_option == "dropdown-list" %}
+                        <label class="vario-variant-name">
+                        {{ option.name }}<span class="vario-variant-selected"></span>
+                        </label>
+                        <select class="vario-variants" data-variant-name="{{ option.name | escape }}" data-position="{{ parentIndex }}">
+                            {% for swatch in option.values %}
+                                <option value="{{ swatch | escape }}" data-product-id="{{product.id}}">{{ swatch }}</option>
+                            {% endfor %}
+                        </select>
+                    {% else %}
+                        <label class="vario-variant-name">{{ option.name }}
+                            <span class="vario-variant-selected"></span>
+                        </label>
+                        <ul class="vario-variants" data-variant-name="{{ option.name | escape }}">
+                            {% for swatch in option.values %}
+                                {% assign variantImageUrl = '' %}
+                                {% for c_variant in product.variants %}
+                                    {% if variantImageUrl == ''%}
+                                        {% assign c_option_index = 0 %}
+                                        {% for c_option in c_variant.options %}
+                                            {% if c_option_index == parentIndex %}
+                                                {% if c_option == swatch%}
+                                                    {% assign variantImageUrl = c_variant.featured_image.src %}
+                                                    {% break %}
+                                                {% endif %}
+                                            {% endif %}
+                                            {% assign c_option_index = c_option_index | plus: 1 %}
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endfor %}
+                            <li class="vario-variant" data-v-tooltip="{{ swatch | escape }}" data-value="{{ swatch | escape }}" data-position="{{ parentIndex }}" data-product-id="{{product.id}}">
+                                <div class="sv-swatch swatch-image sv-single-border" style="background-image: url({{ variantImageUrl | img_url: image_size}})"></div>
+                            </li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                {% assign parentIndex = parentIndex | plus: 1 %}
+            {% endfor %}
+        {% endraw %}
+        </div>
+        </script>
+        <script src="{{ 'vario-home.js' | asset_url }}"></script>
+        <link rel="stylesheet" type="text/css" href="{{ 'vario-home.css' | asset_url }}">
+    {% endif %}
